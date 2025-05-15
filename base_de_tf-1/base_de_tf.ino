@@ -1,3 +1,5 @@
+#include<Servo.h>
+
 /*
  * Configurar Pines
 */
@@ -14,16 +16,22 @@
 */
 
 // Pines de input Boton
-/* Requiere:
+/* Requiere: 1 input digital
 */
+int entradaBoton = 3;
+int valBoton = 0;
 
 // Pines de input sensor IR
-/* Requiere:
+/* Requiere: 1 input analogico
 */
+int entradaIR = A0;
+int valIR = 0;
 
 // Pines de servo motor
-/* Requiere:
+/* Requiere: 1 digital
 */
+int servoPin = 9;
+Servo servoMotor;
 
 // Variables del sistema
 /* 
@@ -32,6 +40,10 @@
 // Setup de variables
 void setup() {
   // put your setup code here, to run once:
+  Serial.begin(9600);
+  servoMotor.attach(servoPin);
+  pinMode(entradaIR, INPUT);
+  pinMode(entradaBoton, INPUT);
 }
 
 
@@ -65,4 +77,22 @@ void loop() {
   // VERIFICAR SI ALGUIEN "TOCA A LA PUERTA"
   //
   // IMPLEMENTACION DE AUTOMATA DE ESTADOS FINITOS
+  valIR = analogRead(entradaIR);
+  valBoton = digitalRead(entradaBoton);
+
+  if ( valIR<100 ){
+    servoMotor.write(0);
+    delay(1000);
+    servoMotor.write(90);
+    delay(1000);
+    servoMotor.write(180);
+    delay(1000);
+  }
+
+  Serial.println(valIR);
+  if (valBoton == HIGH){
+    Serial.println(valBoton);
+  }
+  delay(500);
+
 }
