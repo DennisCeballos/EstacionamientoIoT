@@ -1,6 +1,9 @@
 /*
  * Configurar Pines
 */
+
+#define NRO_ULTRASONICOS 4
+bool coleccion_Ultrasonicos[NRO_ULTRASONICOS] = {};
 // Pines de Multiplexor Analogico
 /* Requiere: 4 digital
 */
