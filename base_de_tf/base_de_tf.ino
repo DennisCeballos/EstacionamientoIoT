@@ -1,8 +1,8 @@
-#include<Servo.h>
+#include <Servo.h>
 
 /*
  * Configurar Pines
-*/
+ */
 
 #define NRO_ULTRASONICOS 4
 bool coleccion_Ultrasonicos[NRO_ULTRASONICOS] = {};
