@@ -21,11 +21,11 @@ bool coleccion_Ultrasonicos[NRO_ULTRASONICOS] = {};
 // --- Elementos relacionados a la entrada ---
 enum Estado
 {
-  ESPERA,
+  REPOSO,
   CONSULTA,
-  APERTURA,
-  CIERRE
-} estado = ESPERA;
+  ABIERTO,
+  SALIDA
+} estado = REPOSO;
 enum Estado estadoAnterior;
 unsigned long capturaTiempo;
 
@@ -38,8 +38,10 @@ int valBoton = 0;
 // Pines de input sensor IR
 /* Requiere: 1 input analogico
  */
-int entradaIR = A0;
-int valIR = 0;
+#define MINIMO_ESPACIO 100 // minimo valor para determinar si hay algo entre ambos sensores o no 
+int entradaIR = A0; // el sensor IR retorna un valor analogico, pero para el proyecto es necesario manejarlo como 1 o 0
+bool valIR = false; // TRUE = hay algo; FALSE = no hay nada
+
 
 // Pines de servo motor
 /* Requiere: 1 digital
@@ -87,17 +89,26 @@ void loop()
   // (IMPLEMENTACION DE AUTOMATA DE ESTADOS FINITOS)
 
   // Se obtienen datos de los sensores
-  valIR = analogRead(entradaIR);
   valBoton = digitalRead(entradaBoton);
+  if (analogRead(entradaIR) < MINIMO_ESPACIO)
+  {
+    valIR = true;
+  }
+  else
+  {
+    valIR = false;
+  }
 
   // Guardar el ultimo estado de ser distinto
   bool nuevoEstado = (estado != estadoAnterior);
   estadoAnterior = estado;
 
+  debug_estados();
+
   // Comportamiento segun el estado que se encuentre
   switch (estado)
   {
-  case Estado::ESPERA: // Estado relacionado al sistema en reposo
+  case Estado::REPOSO: // Estado relacionado al sistema en reposo
     if (valBoton == true)
     {
       estado = Estado::CONSULTA;
@@ -115,16 +126,16 @@ void loop()
     }
     if (conteo < NRO_ULTRASONICOS)
     {
-      estado = Estado::APERTURA;
+      estado = Estado::ABIERTO;
     }
     else
     {
-      estado = Estado::ESPERA;
+      estado = Estado::REPOSO;
     }
   }
   break;
 
-  case Estado::APERTURA: // Estado relacionado a abrir la puerta del estacionamiento
+  case Estado::ABIERTO: // Estado relacionado a abrir y cerrar la puerta del estacionamiento
 
     Serial.println(nuevoEstado);
 
@@ -143,35 +154,35 @@ void loop()
     // Verifica que el tiempo que haya pasado con la puerta abierta sea menor al maximo tiempo definido
     if (millis() - capturaTiempo > 10000)
     {
-      unsigned long t = millis() - capturaTiempo;
-      Serial.println(t);
-      estado = Estado::CIERRE;
+      // Cierra la puerta
+      servoMotor.write(0);
+      estado = Estado::REPOSO;
     }
 
-    // Verifica que el sensor infrarrojo no haya detectado nada
-    // if (valIR)
-    // {
-    //   servoMotor.write(0);
-    // }
+    // Si es que se siente algo en el sensor
+    if (valIR == true)
+    {
+      estado = Estado::SALIDA;
+    }
     break;
 
-  case Estado::CIERRE: // Estado relacionado a cerrar la puerta del estacionamiento
-    // Cierra la puerta con el servomotor
-    servoMotor.write(0);
-    delay(500);
-    estado = Estado::ESPERA;
+  case Estado::SALIDA: // Estado relacionado con esperar a que el conductor pase la entrada
+    // Si es que ya no hay nadie en el sensor
+    if (valIR == false)
+    {
+      // Cierra la puerta con el servomotor
+      delay(1000);
+      servoMotor.write(0);
+
+      estado = Estado::REPOSO;
+    }
     break;
 
   default:
     Serial.println("LOL hubo un error ALGO grave");
     break;
   }
-
-  // Serial.println(valIR);
-  // if (valBoton == HIGH)
-  // {
-  //   Serial.println(valBoton);
-  // }
+  
   delay(1000);
 }
 
@@ -179,17 +190,17 @@ inline void debug_estados()
 {
   switch (estado)
   {
-  case Estado::ESPERA:
-    Serial.println("Estado::ESPERA");
+  case Estado::REPOSO:
+    Serial.println("Estado::REPOSO");
     break;
   case Estado::CONSULTA:
     Serial.println("Estado::CONSULTA");
     break;
-  case Estado::APERTURA:
-    Serial.println("Estado::APERTURA");
+  case Estado::ABIERTO:
+    Serial.println("Estado::ABIERTO");
     break;
-  case Estado::CIERRE:
-    Serial.println("Estado::CIERRE");
+  case Estado::SALIDA:
+    Serial.println("Estado::SALIDA");
     break;
 
   default:
@@ -199,17 +210,17 @@ inline void debug_estados()
   Serial.print("Anterior > ");
   switch (estadoAnterior)
   {
-  case Estado::ESPERA:
-    Serial.println("Estado::ESPERA");
+  case Estado::REPOSO:
+    Serial.println("Estado::REPOSO");
     break;
   case Estado::CONSULTA:
     Serial.println("Estado::CONSULTA");
     break;
-  case Estado::APERTURA:
-    Serial.println("Estado::APERTURA");
+  case Estado::ABIERTO:
+    Serial.println("Estado::ABIERTO");
     break;
-  case Estado::CIERRE:
-    Serial.println("Estado::CIERRE");
+  case Estado::SALIDA:
+    Serial.println("Estado::SALIDA");
     break;
 
   default:
