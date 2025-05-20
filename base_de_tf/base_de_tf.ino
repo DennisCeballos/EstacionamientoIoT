@@ -9,14 +9,23 @@ bool coleccion_Ultrasonicos[NRO_ULTRASONICOS] = {};
 // Pines de Multiplexor Analogico
 /* Requiere: 4 digital
  */
+const int muxRead_S0 = 4; // 16
+const int muxRead_S1 = 5; // 17
+const int muxRead_S2 = 6; // 18
+const int muxRead_Z = 7;  // 19 - Read from this pin
 
 // Pines de Multiplexor Digital
-/* Requiere:
- */
 
-// Pines de "solo un" sensor ultrasonico
-/* Requiere: 2 analogicos
- */
+const int muxWrite_S0 = 10; // 21
+const int muxWrite_S1 = 11; // 22
+const int muxWrite_S2 = 12; // 23
+const int muxWrite_Z = 13;  // 24 - Write from this pin
+
+// Pines de leds
+const int muxLed_S0 = 1; // 21
+const int muxLed_S1 = 2; // 22
+// const int muxLed_S2 = 8; // 23
+const int muxLed_Z = 8; // 24 - Write to the led
 
 // --- Elementos relacionados a la entrada ---
 enum Estado
@@ -38,10 +47,9 @@ int valBoton = 0;
 // Pines de input sensor IR
 /* Requiere: 1 input analogico
  */
-#define MINIMO_ESPACIO 100 // minimo valor para determinar si hay algo entre ambos sensores o no 
-int entradaIR = A0; // el sensor IR retorna un valor analogico, pero para el proyecto es necesario manejarlo como 1 o 0
-bool valIR = false; // TRUE = hay algo; FALSE = no hay nada
-
+#define MINIMO_ESPACIO 100 // minimo valor para determinar si hay algo entre ambos sensores o no
+int entradaIR = A0;        // el sensor IR retorna un valor analogico, pero para el proyecto es necesario manejarlo como 1 o 0
+bool valIR = false;        // TRUE = hay algo; FALSE = no hay nada
 
 // Pines de servo motor
 /* Requiere: 1 digital
@@ -54,10 +62,36 @@ Servo servoMotor;
 void setup()
 {
   // put your setup code here, to run once:
-  Serial.begin(9600);
   servoMotor.attach(servoPin);
   pinMode(entradaIR, INPUT);
   pinMode(entradaBoton, INPUT);
+
+  // Read Mux
+  pinMode(muxRead_S0, OUTPUT);
+  pinMode(muxRead_S1, OUTPUT);
+  pinMode(muxRead_S2, OUTPUT);
+  pinMode(muxRead_Z, INPUT);
+
+  // Write Mux
+  pinMode(muxWrite_S0, OUTPUT);
+  pinMode(muxWrite_S1, OUTPUT);
+  pinMode(muxWrite_S2, OUTPUT);
+  pinMode(muxWrite_Z, OUTPUT);
+
+  Serial.begin(9600);
+}
+
+void selectChannel(int s0, int s1, int s2, int channel)
+{
+  digitalWrite(s0, channel & 0x01);
+  digitalWrite(s1, (channel >> 1) & 0x01);
+  digitalWrite(s2, (channel >> 2) & 0x01);
+}
+
+void selectLedChannel(int s0, int s1 int channel)
+{
+  digitalWrite(s0, channel & 0x01);
+  digitalWrite(s1, (channel >> 1) & 0x01);
 }
 
 void loop()
@@ -68,12 +102,38 @@ void loop()
   // Recorrer la lista de multiplexores
   // Por cada elemento del multiplexor, medir la distancia
 
-  // Actualizar la lista del "ESTADO"(Ocupado, Desocupado) de los slots
+  for (int i = 0; i < NRO_ULTRASONICOS; i++)
+  {
+    // Seleccionar el canal del multiplexor para escribir
+    selectChannel(muxWrite_S0, muxWrite_S1, muxWrite_S2, i);
+    // Escribir el valor del multiplexor
+    digitalWrite(muxWrite_Z, HIGH);
+    delay(1000);
+    digitalWrite(muxWrite_Z, LOW);
 
-  // Actualizar estado de los pines
-  // Por cada elemento de la lista del "ESTADO" de los slots
+    // Seleccionar el canal del multiplexor para leer
+    selectChannel(muxRead_S0, muxRead_S1, muxRead_S2, i);
 
-  // Actualizar el valor del LED correspondiente
+    // Leer el valor del multiplexor
+    int valor = analogRead(muxRead_Z);
+    Serial.print("Valor: ");
+    Serial.println(valor);
+
+    // Guardar el valor en la lista de ultrasonicos
+    // Actualizar la lista del "ESTADO"(Ocupado, Desocupado) de los slots
+
+    if (valor > MINIMO_ESPACIO)
+    {
+      coleccion_Ultrasonicos[i] = true;
+      selectChannel(muxLed_S0, muxLed_S1, muxLed_Z, i);
+      digitalWrite(muxLed_Z, HIGH);
+      delay(2000);
+    }
+    else
+    {
+      coleccion_Ultrasonicos[i] = false;
+    }
+  }
 
   //
   // SUBIR INFORMACIÓN AL SERVIDOR
@@ -182,7 +242,7 @@ void loop()
     Serial.println("LOL hubo un error ALGO grave");
     break;
   }
-  
+
   delay(1000);
 }
 
