@@ -88,7 +88,7 @@ void selectChannel(int s0, int s1, int s2, int channel)
   digitalWrite(s2, (channel >> 2) & 0x01);
 }
 
-void selectLedChannel(int s0, int s1 int channel)
+void selectLedChannel(int s0, int s1, int channel)
 {
   digitalWrite(s0, channel & 0x01);
   digitalWrite(s1, (channel >> 1) & 0x01);
@@ -208,19 +208,15 @@ void loop()
 
       // Toma el tiempo para saber cuanto tiempo esta abierto
       capturaTiempo = millis();
-      Serial.println("Hola que tal");
     }
 
     // Verifica que el tiempo que haya pasado con la puerta abierta sea menor al maximo tiempo definido
-    if (millis() - capturaTiempo > 10000)
+    if (millis() - capturaTiempo > MAX_TIEMPO_ABIERTO)
     {
       // Cierra la puerta
       servoMotor.write(0);
       estado = Estado::REPOSO;
-    }
-
-    // Si es que se siente algo en el sensor
-    if (valIR == true)
+    } else if (valIR == true)  // Si es que se siente algo en el sensor
     {
       estado = Estado::SALIDA;
     }
