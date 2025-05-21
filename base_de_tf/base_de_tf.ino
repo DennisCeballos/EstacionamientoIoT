@@ -3,29 +3,27 @@
 /*
  * Configurar Pines
  */
-
 #define NRO_ULTRASONICOS 4
 bool coleccion_Ultrasonicos[NRO_ULTRASONICOS] = {};
-// Pines de Multiplexor Analogico
+// Pines de Multiplexor Echo
 /* Requiere: 4 digital
  */
-const int muxRead_S0 = 4; // 16
-const int muxRead_S1 = 5; // 17
-const int muxRead_S2 = 6; // 18
-const int muxRead_Z = 7;  // 19 - Read from this pin
+const int muxEcho_S0 = 4;
+const int muxEcho_S1 = 5;
+const int muxEcho_S2 = 6;
+const int muxEcho_Z = 7; 
 
-// Pines de Multiplexor Digital
-
-const int muxWrite_S0 = 10; // 21
-const int muxWrite_S1 = 11; // 22
-const int muxWrite_S2 = 12; // 23
-const int muxWrite_Z = 13;  // 24 - Write from this pin
+// Pines de Multiplexor Trigger
+const int muxTrigger_S0 = 10;
+const int muxTrigger_S1 = 11;
+const int muxTrigger_S2 = 12;
+const int muxTrigger_Z = 13; 
 
 // Pines de leds
-const int muxLed_S0 = 1; // 21
-const int muxLed_S1 = 2; // 22
-// const int muxLed_S2 = 8; // 23
-const int muxLed_Z = 8; // 24 - Write to the led
+const int shiftRegLed_S0 = 1;
+const int shiftRegLed_S1 = 2;
+const int shiftRegLed_S2 = 8;
+const int shiftRegLed_Z = 8; 
 
 // --- Elementos relacionados a la entrada ---
 enum Estado
@@ -41,8 +39,8 @@ unsigned long capturaTiempo;
 // Pines de input Boton
 /* Requiere: 1 input digital
  */
-int entradaBoton = 3;
-int valBoton = 0;
+int entradaBoton = 3, valBoton = 0;
+long t = 0, d = 0;
 
 // Pines de input sensor IR
 /* Requiere: 1 input analogico
@@ -66,32 +64,26 @@ void setup()
   pinMode(entradaIR, INPUT);
   pinMode(entradaBoton, INPUT);
 
-  // Read Mux
-  pinMode(muxRead_S0, OUTPUT);
-  pinMode(muxRead_S1, OUTPUT);
-  pinMode(muxRead_S2, OUTPUT);
-  pinMode(muxRead_Z, INPUT);
+  // Mux Echo
+  pinMode(muxEcho_S0, OUTPUT);
+  pinMode(muxEcho_S1, OUTPUT);
+  pinMode(muxEcho_S2, OUTPUT);
+  pinMode(muxEcho_Z, OUTPUT);
 
-  // Write Mux
-  pinMode(muxWrite_S0, OUTPUT);
-  pinMode(muxWrite_S1, OUTPUT);
-  pinMode(muxWrite_S2, OUTPUT);
-  pinMode(muxWrite_Z, OUTPUT);
+  // Mux Trigger
+  pinMode(muxTrigger_S0, OUTPUT);
+  pinMode(muxTrigger_S1, OUTPUT);
+  pinMode(muxTrigger_S2, OUTPUT);
+  pinMode(muxTrigger_Z, OUTPUT);
 
   Serial.begin(9600);
 }
 
 void selectChannel(int s0, int s1, int s2, int channel)
 {
-  digitalWrite(s0, channel & 0x01);
-  digitalWrite(s1, (channel >> 1) & 0x01);
-  digitalWrite(s2, (channel >> 2) & 0x01);
-}
-
-void selectLedChannel(int s0, int s1, int channel)
-{
-  digitalWrite(s0, channel & 0x01);
-  digitalWrite(s1, (channel >> 1) & 0x01);
+  digitalWrite(s0, bitRead(channel, 0));
+  digitalWrite(s1, bitRead(channel, 1));
+  digitalWrite(s2, bitRead(channel, 2));
 }
 
 void loop()
@@ -105,28 +97,29 @@ void loop()
   for (int i = 0; i < NRO_ULTRASONICOS; i++)
   {
     // Seleccionar el canal del multiplexor para escribir
-    selectChannel(muxWrite_S0, muxWrite_S1, muxWrite_S2, i);
+    selectChannel(muxTrigger_S0, muxTrigger_S1, muxTrigger_S2, i);
     // Escribir el valor del multiplexor
-    digitalWrite(muxWrite_Z, HIGH);
-    delay(1000);
-    digitalWrite(muxWrite_Z, LOW);
+    digitalWrite(muxTrigger_Z, HIGH);
+    delay(10);
+    digitalWrite(muxTrigger_Z, LOW);
 
     // Seleccionar el canal del multiplexor para leer
-    selectChannel(muxRead_S0, muxRead_S1, muxRead_S2, i);
+    selectChannel(muxEcho_S0, muxEcho_S1, muxEcho_S2, i);
 
     // Leer el valor del multiplexor
-    int valor = analogRead(muxRead_Z);
-    Serial.print("Valor: ");
-    Serial.println(valor);
+    t = pulseIn(muxEcho_Z, HIGH);
+    d = t/59;
+    
+    Serial.print("Distancia: ");
+    Serial.print(d);
+
 
     // Guardar el valor en la lista de ultrasonicos
     // Actualizar la lista del "ESTADO"(Ocupado, Desocupado) de los slots
 
-    if (valor > MINIMO_ESPACIO)
+    if (d > MINIMO_ESPACIO)
     {
       coleccion_Ultrasonicos[i] = true;
-      selectChannel(muxLed_S0, muxLed_S1, muxLed_Z, i);
-      digitalWrite(muxLed_Z, HIGH);
       delay(2000);
     }
     else
