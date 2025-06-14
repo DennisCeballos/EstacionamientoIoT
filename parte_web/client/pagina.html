@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cliente WebSocket</title>
+  <style>
+    body { font-family: sans-serif; padding: 1em; }
+    #log { border: 1px solid #ccc; padding: 1em; height: 200px; overflow-y: scroll; }
+    input, button { padding: 0.5em; margin-top: 0.5em; }
+  </style>
+</head>
+<body>
+
+  <h1>Cliente WebSocket</h1>
+  <div id="log"></div>
+
+  <input type="text" id="mensaje" placeholder="Escribe un mensaje..." />
+  <button onclick="enviarMensaje()">Enviar</button>
+
+  <script>
+    const log = document.getElementById('log');
+    const socket = new WebSocket('https://intriguing-broad-baseball.glitch.me');
+
+    function escribirLog(texto) {
+      const p = document.createElement('p');
+      p.textContent = texto;
+      log.appendChild(p);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    socket.onopen = () => {
+      escribirLog('✅ Conectado al servidor WebSocket');
+    };
+
+    socket.onmessage = (event) => {
+      escribirLog('📥 Mensaje del servidor: ' + event.data);
+    };
+
+    socket.onclose = () => {
+      escribirLog('❌ Conexión cerrada');
+    };
+
+    socket.onerror = (error) => {
+      escribirLog('⚠️ Error: ' + error.message);
+    };
+
+    function enviarMensaje() {
+      const input = document.getElementById('mensaje');
+      const mensaje = input.value;
+      if (mensaje) {
+        socket.send(mensaje);
+        escribirLog('📤 Tú: ' + mensaje);
+        input.value = '';
+      }
+    }
+  </script>
+
+</body>
+</html>
