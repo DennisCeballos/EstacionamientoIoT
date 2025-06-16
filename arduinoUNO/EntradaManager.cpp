@@ -2,7 +2,7 @@
 
 #include "EntradaManager.h"
 #include "componentes.h"
-#include <iostream>
+#include <Arduino.h>
 #include <Servo.h>
 
 // Definicion de estados para la logica del automata

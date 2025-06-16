@@ -1,6 +1,7 @@
 /* --- ParkingManager.cpp --- */
 #include "componentes.h"
 #include "parkingManager.h"
+#include <Arduino.h>
 
 #define DISTANCIA_ACEPTADA 20
 

@@ -4,6 +4,7 @@ Clase para definir todos los componentes para el proyecto
 */
 #ifndef COMPONENTES_H
 #define COMPONENTES_H
+#include <Arduino.h>
 
 // Estructura para controlar "un rayo" (un segmento) conformado por un emisor y un receptor IR
 typedef struct ReceptorIR

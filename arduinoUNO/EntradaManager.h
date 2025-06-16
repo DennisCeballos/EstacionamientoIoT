@@ -3,6 +3,7 @@
 #pragma once
 
 #include "componentes.h"
+#include <Servo.h>
 
 #ifndef ENTRADAMANAGER_H
 #define ENTRADAMANAGER_H
@@ -23,6 +24,7 @@ private:
     bool valIR;
     bool* espaciosEstacionamiento;
     int nroEspacios;
+    unsigned long capturaTiempo;
 
 public:
     EntradaManager(int, Boton, ReceptorIR, bool*, int);
