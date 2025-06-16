@@ -5,12 +5,44 @@ Clase para definir todos los componentes para el proyecto
 #ifndef COMPONENTES_H
 #define COMPONENTES_H
 
+// Estructura para controlar "un rayo" (un segmento) conformado por un emisor y un receptor IR
+typedef struct ReceptorIR
+{
+    int pinReceptorIR;
+    ReceptorIR(int _pin): pinReceptorIR(_pin)
+    {
+        pinMode(pinReceptorIR, INPUT);
+    }
+
+    // hace una lectura sobre la cantidad de senal IR recibido por el receptor
+    int leerSenal()
+    {
+        return analogRead(pinReceptorIR);
+    }
+
+} ReceptorIR;
+
+// Estructura para controlar un boton
+typedef struct Boton
+{
+    int pin;
+    Boton(int _pin): pin(_pin)
+    {
+        pinMode(pin, INPUT_PULLUP);
+    }
+
+    bool isActive()
+    {
+        return digitalRead(pin);
+    }
+
+} Boton;
+
 // Estructura para controlar un LED
 typedef struct LED
 {
     int pin;
 
-    LED() {}
     LED(int _pin) : pin(_pin)
     {
         pinMode(pin, OUTPUT);
