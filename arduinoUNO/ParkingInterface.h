@@ -1,4 +1,4 @@
-/* --- ParkingManager.h --- */
+/* --- ParkingInterface.h --- */
 
 #pragma once
 
