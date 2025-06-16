@@ -12,11 +12,13 @@ Asi como asume que hay:
     un demultiplexor para los triggers ultrasonicos
     un multiplexor para los echo ultrasonicos
     un shiftRegister para los LEDs
+
+    tambien requiere que se inicie con la referencia de un array de bool, lo cual representa el estado de los espacios de estacionamiento
 */
 class ParkingManager
 {
 public:
-    ParkingManager(int nroLugares, Demultiplexor _demuxTriggers, Multiplexor _muxEchos, ShiftRegister _shiftRegLEDs);
+    ParkingManager(bool* _estadoEstacionamientos, int nroLugares, Demultiplexor _demuxTriggers, Multiplexor _muxEchos, ShiftRegister _shiftRegLEDs);
 
     int getEstadoEspacio(int);
 

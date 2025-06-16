@@ -4,17 +4,14 @@
 
 #define DISTANCIA_ACEPTADA 20
 
-ParkingManager::ParkingManager(int nroLugares, Demultiplexor _demuxTriggers, Multiplexor _muxEchos, ShiftRegister _shiftRegLEDs) : 
-                               nroEspacios(nroLugares), demuxTriggers(_demuxTriggers), muxEchos(_muxEchos), shiftRegLEDs(_shiftRegLEDs), ultrasonico(demuxTriggers.inputPin, muxEchos.signalPin)
+ParkingManager::ParkingManager(bool* _estadosEstacionamiento, int nroLugares, Demultiplexor _demuxTriggers, Multiplexor _muxEchos, ShiftRegister _shiftRegLEDs) : 
+                            disponibilidadEspacios(_estadosEstacionamiento), nroEspacios(nroLugares), demuxTriggers(_demuxTriggers), muxEchos(_muxEchos), shiftRegLEDs(_shiftRegLEDs), ultrasonico(demuxTriggers.inputPin, muxEchos.signalPin)
 {
     // En este punto ya fueron inicializados todos los componentes en su respectiva clase
     
     // excepto el ultrasonico local
     // este objeto solo se crea con la finalidad de hacer mas legible el codigo
     // ,pero realmente no es un elemento fisico sino solo el componente logico que se usa
-
-    // Generar arrays para la disponibilidad de los espacios estacionamiento
-    disponibilidadEspacios = new bool[nroEspacios];
 }
 
 // Calcula la disponibilidad de cada espacio
