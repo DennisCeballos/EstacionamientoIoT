@@ -10,6 +10,9 @@ Clase para definir todos los componentes para el proyecto
 typedef struct ReceptorIR
 {
     int pinReceptorIR;
+
+    ReceptorIR() = default;
+
     ReceptorIR(int _pin): pinReceptorIR(_pin)
     {
         pinMode(pinReceptorIR, INPUT);
@@ -27,14 +30,17 @@ typedef struct ReceptorIR
 typedef struct Boton
 {
     int pin;
+
+    Boton() = default;
+
     Boton(int _pin): pin(_pin)
     {
-        pinMode(pin, INPUT_PULLUP);
+        pinMode(pin, INPUT_PULLUP); //esto va hacer que siempre detecte HIGH la entrada (a menos que se le aplique una corriente negativa)
     }
 
     bool isActive()
     {
-        return digitalRead(pin);
+        return !digitalRead(pin);
     }
 
 } Boton;
@@ -43,6 +49,8 @@ typedef struct Boton
 typedef struct LED
 {
     int pin;
+
+    LED() = default;
 
     LED(int _pin) : pin(_pin)
     {
@@ -67,6 +75,8 @@ typedef struct SensorUltrasonico
     int triggerPin;
     int echoPin;
 
+    SensorUltrasonico() = default;
+
     SensorUltrasonico(int _triggerPin, int _echoPin) : triggerPin(_triggerPin), echoPin(_echoPin)
     {
         // definir los pinmode del sensor
@@ -90,7 +100,7 @@ typedef struct SensorUltrasonico
         // medida de veolcidad del sonido (cm/micro s)
         const float velocidadSonido = 0.03446f;
         // medida de distancia en cm
-        const int distancia = duracion * velocidadSonido / 2;
+        int distancia = duracion * velocidadSonido / 2;
 
         // ? rando maximo de un sensor ultrasonico 4 metros (opcional?)
         // if (distancia >= 180) {
@@ -107,12 +117,15 @@ typedef struct Multiplexor
     const int *controlPins; // S0, S1, S2
     int signalPin;          // salida SIG (o tambien el OUTPUT)
 
+    Multiplexor() = default;
+
     Multiplexor(const int *_controlPins, int _signalPin) : controlPins(_controlPins), signalPin(_signalPin)
     {
         for (int i = 0; i < 3; ++i)
         {
             pinMode(controlPins[i], OUTPUT);
         }
+        pinMode(signalPin, INPUT_PULLUP);
     }
 
     void seleccionarEntrada(int pos_entrada)
@@ -124,9 +137,8 @@ typedef struct Multiplexor
         }
     }
 
-    int leerEntrada(int entrada)
+    int leerEntrada()
     {
-        seleccionarEntrada(entrada);
         return digitalRead(signalPin);
     }
 } Multiplexor;
@@ -138,6 +150,8 @@ typedef struct Demultiplexor
     int inputPin;           // Pin de entrada para ser redirigido
     int enablePin = -1;     // probablemente necesario
 
+    Demultiplexor() = default;
+    
     Demultiplexor(const int *_controlPins, int _inputPin) : controlPins(_controlPins), inputPin(_inputPin)
     {
         // Inicializar los pines
@@ -170,6 +184,8 @@ struct ShiftRegister {
     int clockPin;
     int latchPin;
     int value = 0;
+
+    ShiftRegister() = default;
 
     ShiftRegister(int data, int clock, int latch)
         : dataPin(data), clockPin(clock), latchPin(latch)
