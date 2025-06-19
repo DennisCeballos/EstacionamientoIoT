@@ -15,10 +15,10 @@ Asi como asume que hay:
 
     tambien requiere que se inicie con la referencia de un array de bool, lo cual representa el estado de los espacios de estacionamiento
 */
-class ParkingManager
+class ParkingInterface
 {
 public:
-    ParkingManager(bool* _estadoEstacionamientos, int nroLugares, Demultiplexor _demuxTriggers, Multiplexor _muxEchos, ShiftRegister _shiftRegLEDs);
+    ParkingInterface(bool* _estadoEstacionamientos, int nroLugares, Demultiplexor _demuxTriggers, Multiplexor _muxEchos, ShiftRegister _shiftRegLEDs);
 
     int getEstadoEspacio(int);
 
@@ -26,7 +26,7 @@ public:
 
     bool reservarEspacioEstacionamiento(int);
 
-    ~ParkingManager();
+    ~ParkingInterface();
 
 private:
     int nroEspacios;

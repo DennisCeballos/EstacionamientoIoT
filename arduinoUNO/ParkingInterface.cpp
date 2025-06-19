@@ -5,7 +5,7 @@
 
 #define DISTANCIA_ACEPTADA 20
 
-ParkingManager::ParkingManager(bool* _estadosEstacionamiento, int nroLugares, Demultiplexor _demuxTriggers, Multiplexor _muxEchos, ShiftRegister _shiftRegLEDs) : 
+ParkingInterface::ParkingInterface(bool* _estadosEstacionamiento, int nroLugares, Demultiplexor _demuxTriggers, Multiplexor _muxEchos, ShiftRegister _shiftRegLEDs) : 
                             disponibilidadEspacios(_estadosEstacionamiento), nroEspacios(nroLugares), demuxTriggers(_demuxTriggers), muxEchos(_muxEchos), shiftRegLEDs(_shiftRegLEDs), ultrasonico(demuxTriggers.inputPin, muxEchos.signalPin)
 {
     // En este punto ya fueron inicializados todos los componentes en su respectiva clase
@@ -16,7 +16,7 @@ ParkingManager::ParkingManager(bool* _estadosEstacionamiento, int nroLugares, De
 }
 
 // Calcula la disponibilidad de cada espacio
-int ParkingManager::getEstadoEspacio(int pos)
+int ParkingInterface::getEstadoEspacio(int pos)
 {
     // cambia los multiplexores al espacio elegido
     this->demuxTriggers.seleccionarSalida(pos);
@@ -32,7 +32,7 @@ int ParkingManager::getEstadoEspacio(int pos)
     return true;
 }
 
-bool *ParkingManager::getEstado_Estacionamiento()
+bool *ParkingInterface::getEstado_Estacionamiento()
 {
     // Recorrer todos los espacios de estacionamiento y registrar su disponibilidad
     for (int i = 0; i < this->nroEspacios; i++)
@@ -55,9 +55,9 @@ bool *ParkingManager::getEstado_Estacionamiento()
     return disponibilidadEspacios;
 }
 
-bool ParkingManager::reservarEspacioEstacionamiento(int)
+bool ParkingInterface::reservarEspacioEstacionamiento(int)
 {
     return false;
 }
 
-ParkingManager::~ParkingManager() {}
+ParkingInterface::~ParkingInterface() {}
