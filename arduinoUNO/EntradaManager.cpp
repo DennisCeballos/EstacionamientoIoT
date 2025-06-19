@@ -5,28 +5,29 @@
 #include <Arduino.h>
 #include <Servo.h>
 
-// Definicion de estados para la logica del automata
-enum Estado
-{
-    REPOSO,
-    CONSULTA,
-    ABIERTO,
-    SALIDA
-} estado = REPOSO;
-enum Estado estadoAnterior;
+EntradaManager::EntradaManager() = default;
 
-EntradaManager::EntradaManager(int servoPin, Boton _boton, ReceptorIR _receptorIR, bool *_estadoEspacios, int _nroEspacios) : botonEntrada(_boton), segmentoIR(_receptorIR), espaciosEstacionamiento(_estadoEspacios), nroEspacios(_nroEspacios)
+EntradaManager::EntradaManager(int servoPin, Boton _boton, ReceptorIR _receptorIR, bool *_estadoEspacios, int _nroEspacios) : 
+    botonEntrada(_boton), segmentoIR(_receptorIR), espaciosEstacionamiento(_estadoEspacios), nroEspacios(_nroEspacios)
 {
+    Estado estadoAnterior = Estado::REPOSO;
+    Estado estado = Estado::REPOSO;
+
     // A este punto ya fueron inicializados los otros componentes
 
     // Inicializar el servomotor
-    servoMotor.attach(servoPin);
+    EntradaManager::servoMotor.attach(servoPin);
 }
 
 void EntradaManager::ejecutarLoop()
 {
     // Se obtienen datos de los sensores
     int valBoton = botonEntrada.isActive();
+    Serial.print("Boton: ");
+    Serial.println(valBoton);
+    Serial.print("valIR: ");
+    Serial.println(valIR);
+
     if (segmentoIR.leerSenal() < MINIMO_ESPACIO)
     {
         valIR = true;
@@ -46,6 +47,7 @@ void EntradaManager::ejecutarLoop()
     switch (estado)
     {
     case Estado::REPOSO: // Estado relacionado al sistema en reposo
+        Serial.println("EStoy en reposo");
         if (valBoton == true)
         {
             estado = Estado::CONSULTA;
@@ -53,6 +55,7 @@ void EntradaManager::ejecutarLoop()
         break;
 
     case Estado::CONSULTA: // Estado relacionado a consultar si hay espacio disponible en el estacionamiento
+        Serial.println("EStoy en CONSULTA");
         // Verificar cuantos espacios estan disponibles
         int conteo = 0;
         for (int i = 0; i < nroEspacios; i++)
@@ -61,9 +64,12 @@ void EntradaManager::ejecutarLoop()
             conteo = espaciosEstacionamiento[i] ? conteo + 1 : conteo;
         }
 
+        Serial.println(conteo);
+
         // Si es que hay al menos un espacio disponible
         if (conteo > 0)
         {
+            Serial.println("ona");
             estado = Estado::ABIERTO;
         }
         else
@@ -73,6 +79,7 @@ void EntradaManager::ejecutarLoop()
         break;
 
     case Estado::ABIERTO: // Estado relacionado a abrir y cerrar la puerta del estacionamiento
+        Serial.println("EStoy en Abierto");
 
         // En caso sea la primera vez que se ingresa a este estado
         if (nuevoEstado)
@@ -83,6 +90,7 @@ void EntradaManager::ejecutarLoop()
             // Toma el tiempo para saber cuanto tiempo esta abierto
             capturaTiempo = millis();
         }
+        Serial.println(capturaTiempo);
 
         // Verifica que el tiempo que haya pasado con la puerta abierta sea menor al maximo tiempo definido
         if (millis() - capturaTiempo > MAX_TIEMPO_ABIERTO)
@@ -98,6 +106,7 @@ void EntradaManager::ejecutarLoop()
         break;
 
     case Estado::SALIDA: // Estado relacionado con esperar a que el conductor pase la entrada
+        Serial.println("EStoy en Salida");
         // Si es que ya no hay nadie en el sensor
         if (valIR == false)
         {
@@ -114,6 +123,10 @@ void EntradaManager::ejecutarLoop()
         Serial.println("LOL hubo un error ALGO grave con el automata");
         break;
     }
+
+    Serial.print("estado: ");
+    Serial.println(estado);
+    //Serial.println("hola");
 }
 
 EntradaManager::~EntradaManager()
