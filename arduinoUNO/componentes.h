@@ -112,15 +112,20 @@ typedef struct SensorUltrasonico
 } SensorUltrasonico;
 
 // Estructura de un Multiplexor con 8 pines de entrada DIGITAL
-typedef struct Multiplexor
+typedef struct Multiplexor //Lees datos de entrada (In) con selectores (S0, S1, S2) y los bota en SIG o Y
 {
-    const int *controlPins; // S0, S1, S2
+    int controlPins[3]; // S0, S1, S2
     int signalPin;          // salida SIG (o tambien el OUTPUT)
 
     Multiplexor() = default;
 
-    Multiplexor(const int *_controlPins, int _signalPin) : controlPins(_controlPins), signalPin(_signalPin)
+    Multiplexor(const int _controlPins[3], int _signalPin) : signalPin(_signalPin)
     {
+        // Guardar los pines de control al array interno de la clase
+        for (int i = 0; i < 3; ++i) {
+            controlPins[i] = _controlPins[i];  // Copiar cada valor
+        }
+
         for (int i = 0; i < 3; ++i)
         {
             pinMode(controlPins[i], OUTPUT);
@@ -130,11 +135,17 @@ typedef struct Multiplexor
 
     void seleccionarEntrada(int pos_entrada)
     {
+        // Serial.println("Se selecciono la salida: ");
         for (int i = 0; i < 3; ++i)
         {
             // la operacion de pos_entrada >> 1 & 1 obtiene el valor en bits del numero segun su posicion i
             digitalWrite(controlPins[i], (pos_entrada >> i) & 1);
+            
+            // Serial.print(controlPins[i]);
+            // Serial.print(" - ");
+            // Serial.println((pos_entrada >> i) & 1);
         }
+        // Serial.println(pos_entrada);
     }
 
     int leerEntrada()
@@ -144,31 +155,42 @@ typedef struct Multiplexor
 } Multiplexor;
 
 // Estructura de un Demultiplexor con 8 pines de salida (3 control pins) DIGITAL
-typedef struct Demultiplexor
+typedef struct Demultiplexor //Envia entrada (D) mediante al selector a una de las 8 salidas (In)
 {
-    const int *controlPins; // S0, S1, S2
+    int controlPins[3]; // S0, S1, S2
     int inputPin;           // Pin de entrada para ser redirigido
     int enablePin = -1;     // probablemente necesario
 
     Demultiplexor() = default;
     
-    Demultiplexor(const int *_controlPins, int _inputPin) : controlPins(_controlPins), inputPin(_inputPin)
+    Demultiplexor(const int _controlPins[3], int _inputPin) : inputPin(_inputPin)
     {
+        // Guardar los pines de control al array interno de la clase
+        for (int i = 0; i < 3; ++i) {
+            controlPins[i] = _controlPins[i];  // Copiar cada valor
+        }
+
         // Inicializar los pines
         for (int i = 0; i < 3; ++i)
         {
             pinMode(controlPins[i], OUTPUT);
         }
-        pinMode(inputPin, OUTPUT);
+        pinMode(inputPin, OUTPUT); //Para que envie la senal
     }
 
     void seleccionarSalida(int pos_salida)
     {
+        // Serial.println("Se selecciono la salida: ");
         for (int i = 0; i < 3; ++i)
         {
-            // la operacion de pos_salida >> 1 & 1 obtiene el valor en bits del numero segun su posicion i
+            // la operacion de pos_salida >> 1 & 1 y obtiene el valor en bits del numero segun su posicion i
             digitalWrite(controlPins[i], (pos_salida >> i) & 1);
+            
+            // Serial.print(controlPins[i]);
+            // Serial.print(" - ");
+            // Serial.println((pos_salida >> i) & 1);
         }
+        // Serial.println(pos_salida);
     }
 
     void enviarASalida(int salida, int valor)
