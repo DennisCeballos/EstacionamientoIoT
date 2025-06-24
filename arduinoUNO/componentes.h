@@ -222,6 +222,16 @@ struct ShiftRegister {
         digitalWrite(latchPin, LOW);
         shiftOut(dataPin, clockPin, MSBFIRST, val);
         digitalWrite(latchPin, HIGH);
+        /*
+        Serial.print("Escribiendo: ");
+        Serial.print(val);
+        Serial.print(" sobre: Data>");
+        Serial.print(dataPin);
+        Serial.print(" - Clock> ");
+        Serial.print(clockPin);
+        Serial.print(" - Latch> ");
+        Serial.println(latchPin);
+        */
     }
 
     // Definir el estado de un bit en especifico en el ShiftRegister
