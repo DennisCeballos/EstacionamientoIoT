@@ -74,17 +74,27 @@ function syncAllArduinoClients() {
 }
 
 function updateStateFromArduinoClient(stateStr) {
-  const floor1 = stateStr.substring(0, 7).split(' ').map(val => Number(val));
-  const floor2 = stateStr.substring(8).split(' ').map(val => Number(val));
+  // Validate format: exactly 8 numbers (0 or 1) separated by spaces
+  const formatRegex = /^(0|1) (0|1) (0|1) (0|1) (0|1) (0|1) (0|1) (0|1)$/;
+  if (!formatRegex.test(stateStr.trim())) {
+    console.log('Error de formato, recibido:', stateStr);
+    return;
+  }
+
+  // Proceed with state update
+  const values = stateStr.trim().split(' ').map(Number);
+  const floor1 = values.slice(0, 4);
+  const floor2 = values.slice(4);
+
   for (let i = 0; i < 4; i++) {
     PARKING_STATE[0][i] = PARKING_STATE[0][i] === 2 && floor1[i] === 1 ? PARKING_STATE[0][i] : floor1[i];
-  }
-  for (let i = 0; i < 4; i++) {
     PARKING_STATE[1][i] = PARKING_STATE[1][i] === 2 && floor2[i] === 1 ? PARKING_STATE[1][i] : floor2[i];
   }
-  console.log('Estado actualizado desde arduino: ', stateStr);
+
+  console.log('Estado actualizado desde Arduino:', stateStr);
   console.log(PARKING_STATE);
 }
+
 
 function updateStateFromWebClient(stateStr) {
   const [floor, spot, status] = stateStr.split(' ').map(val => Number(val));
