@@ -42,21 +42,35 @@ function syncAllWebclients(sender) {
   });
 }
 
-function syncArduinoClient() {
-  const arduinoClient = [...wss.clients].find(client => client.type === ARDUINO_CLIENT);
-  if (arduinoClient && arduinoClient.readyState === WebSocket.OPEN) {
-    // TODO: which message should the server send to arduino?
-    let stateStr = '';
-    for (let i = 0; i < 4; i++) {
-      stateStr += PARKING_STATE[0][i] + ' ';
+function syncAllArduinoClients() {
+  // para el cliente arduino y la pagina config que simula ser arduino
+  [...wss.clients].filter(client => client.type === ARDUINO_CLIENT).forEach(arduinoClient => {
+    if (arduinoClient.readyState === WebSocket.OPEN) {
+      let stateStr = '';
+      for (let i = 0; i < 4; i++) {
+        stateStr += PARKING_STATE[0][i] + ' ';
+      }
+      for (let i = 0; i < 3; i++) {
+        stateStr += PARKING_STATE[1][i] + ' ';
+      }
+      stateStr += PARKING_STATE[1][3];
+      console.log('Cadena de estado enviada a arduino: ', stateStr);
+      arduinoClient.send(stateStr);
     }
-    for (let i = 0; i < 3; i++) {
-      stateStr += PARKING_STATE[1][i] + ' ';
-    }
-    stateStr += PARKING_STATE[1][3];
-    console.log('Cadena de estado enviada a arduino: ', stateStr);
-    arduinoClient.send(stateStr);
-  }
+  });
+  // if (arduinoClient && arduinoClient.readyState === WebSocket.OPEN) {
+  //   // TODO: which message should the server send to arduino?
+  //   let stateStr = '';
+  //   for (let i = 0; i < 4; i++) {
+  //     stateStr += (PARKING_STATE[0][i] === 2 ? 1 : 0) + ' ';
+  //   }
+  //   for (let i = 0; i < 3; i++) {
+  //     stateStr += (PARKING_STATE[1][i] === 2 ? 1 : 0) + ' ';
+  //   }
+  //   stateStr += PARKING_STATE[1][3] === 2 ? 1 : 0;
+  //   console.log('Cadena de estado enviada a arduino: ', stateStr);
+  //   arduinoClient.send(stateStr);
+  // }
 }
 
 function updateStateFromArduinoClient(stateStr) {
@@ -94,7 +108,7 @@ wss.on('connection', (wsClient, req) => {
       case WEB_CLIENT:
         updateStateFromWebClient(message.toString());
         syncAllWebclients(wsClient);
-        syncArduinoClient();
+        syncAllArduinoClients();
         break;
       default:
         console.error('Un cliente desconodido envió un mensaje');
