@@ -1,5 +1,6 @@
 const express = require('express');
 const http = require('http');
+const path = require('path');
 const WebSocket = require('ws');
 
 // Basic Express app (for Glitch to expose a web server)
@@ -10,6 +11,7 @@ const wss = new WebSocket.Server({ server });
 const ARDUINO_CLIENT = 'arduino';
 const WEB_CLIENT = 'web';
 
+// 0 = ocupado, 1 = disponible, 2 = reservado
 const PARKING_STATE = {
   0: {
     0: 1,
@@ -26,9 +28,10 @@ const PARKING_STATE = {
 };
 
 // Optional: a basic home route
-app.get('/', (req, res) => {
-  // res.send('✅ WebSocket server is running.');
-  res.sendFile('../client/public/index.html');
+app.use('/', express.static('../client/dist'));
+
+app.get('*', (_, res) => {
+  res.sendFile(path.resolve('../client/dist/index.html'));
 });
 
 function syncAllWebclients(sender) {
@@ -41,7 +44,7 @@ function syncAllWebclients(sender) {
 
 function syncArduinoClient() {
   const arduinoClient = [...wss.clients].find(client => client.type === ARDUINO_CLIENT);
-  if (arduinoClient.readyState === WebSocket.OPEN) {
+  if (arduinoClient && arduinoClient.readyState === WebSocket.OPEN) {
     // TODO: which message should the server send to arduino?
     let stateStr = '';
     for (let i = 0; i < 4; i++) {
@@ -70,14 +73,14 @@ function updateStateFromArduinoClient(stateStr) {
 }
 
 function updateStateFromWebClient(stateStr) {
-  const [floor, space, status] = stateStr.split(' ').map(val => Number(val));
-  PARKING_STATE[floor][space] = status;
+  const [floor, spot, status] = stateStr.split(' ').map(val => Number(val));
+  PARKING_STATE[floor][spot] = status;
   console.log('Estado actualizado desde web: ', stateStr);
   console.log(PARKING_STATE);
 }
 
 wss.on('connection', (wsClient, req) => {
-  const clientType = req.headers['Client-Type'];
+  const clientType = wsClient.protocol;
   console.log('👤 Se conecto un cliente: ' + (clientType || 'desconocido'));
   wsClient.type = clientType;
 
@@ -100,8 +103,10 @@ wss.on('connection', (wsClient, req) => {
   });
 
   wsClient.on('close', () => {
-    console.log(`👋 Un cliente ${clientType} se deconecto`);
+    console.log('👋 Se deconecto un cliente: ' + clientType);
   });
+
+  wsClient.send(JSON.stringify(PARKING_STATE));
 });
 
 const PORT = process.env.PORT || 3000;
