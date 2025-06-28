@@ -28,10 +28,10 @@ const PARKING_STATE = {
 };
 
 // Optional: a basic home route
-app.use('/', express.static('../client/dist'));
+app.use('/', express.static(path.join(__dirname, '..', 'client/dist')));
 
 app.get('*', (_, res) => {
-  res.sendFile(path.resolve('../client/dist/index.html'));
+  res.sendFile(path.join(__dirname, '..', 'client/dist/index.html'));
 });
 
 function syncAllWebclients(sender) {
