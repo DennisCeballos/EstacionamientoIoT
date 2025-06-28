@@ -1,14 +1,23 @@
 #include "WebSocketManager.h"
 
-#define WIFI_SSID "CASA"
-#define WIFI_PASSWORD "12345678"
-#define SERVIDOR_WEBSOCKET_DIRECCION "192.168.1.49"
-#define SERVIDOR_WEBSOCKET_PUERTO 5000
+#define WIFI_SSID "Galaxy S24 FF70"
+#define WIFI_PASSWORD "Kserola2830"
+#define SERVIDOR_WEBSOCKET_DIRECCION "192.168.159.164"
+#define SERVIDOR_WEBSOCKET_PUERTO 3000
 #define SERVIDOR_WEBSOCKET_URL "/"
 
+WebSocketManager* WebSocketManager::instance = nullptr;
+
+// Minimal constructor (only stores instance pointer)
 WebSocketManager::WebSocketManager() {
+    instance = this;
+}
+
+WebSocketManager::~WebSocketManager() {}
+
+void WebSocketManager::begin() {
     USE_SERIAL.begin(115200);
-    USE_SERIAL.setDebugOutput(false);
+    USE_SERIAL.setDebugOutput(true);
     USE_SERIAL.println("\n\n[SETUP] Starting WebSocketManager...");
 
     for (uint8_t t = 4; t > 0; t--) {
@@ -16,20 +25,22 @@ WebSocketManager::WebSocketManager() {
         delay(1000);
     }
 
-    wiFiMulti.addAP(WIFI_SSID, WIFI_PASSWORD);
+    WiFiMulti.addAP(WIFI_SSID, WIFI_PASSWORD);
+    USE_SERIAL.println("Conectando a la WiFi...");
 
     WiFi.disconnect();
-    while (wiFiMulti.run() != WL_CONNECTED) {
+    while (WiFiMulti.run() != WL_CONNECTED) {
         delay(100);
     }
 
-    webSocket.begin(SERVIDOR_WEBSOCKET_DIRECCION, SERVIDOR_WEBSOCKET_PUERTO, SERVIDOR_WEBSOCKET_URL);
-    webSocket.onEvent([this](WStype_t t, uint8_t* p, size_t l) { this->webSocketEvent(t, p, l); });
-    webSocket.setReconnectInterval(5000);
-    USE_SERIAL.println("[SETUP] WebSocketManager initialized.");
-}
+    USE_SERIAL.println("WiFi conectada.");
 
-WebSocketManager::~WebSocketManager() {}
+    webSocket.begin(SERVIDOR_WEBSOCKET_DIRECCION, SERVIDOR_WEBSOCKET_PUERTO, SERVIDOR_WEBSOCKET_URL);
+    webSocket.onEvent(WebSocketManager::webSocketEventStatic);
+    webSocket.setReconnectInterval(5000);
+
+    USE_SERIAL.println("[SETUP] WebSocketManager inicializado.");
+}
 
 void WebSocketManager::loop() {
     webSocket.loop();

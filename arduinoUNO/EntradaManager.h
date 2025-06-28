@@ -3,7 +3,7 @@
 #pragma once
 
 #include "componentes.h"
-#include <Servo.h>
+#include <ESP32Servo.h>
 
 #ifndef ENTRADAMANAGER_H
 #define ENTRADAMANAGER_H

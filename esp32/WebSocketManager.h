@@ -5,22 +5,33 @@
 #include <WiFi.h>
 #include <WiFiMulti.h>
 #include <WebSocketsClient.h>
+#include <WiFiClientSecure.h>
 
-#define USE_SERIAL Serial1
+#define USE_SERIAL Serial
 
 class WebSocketManager {
 public:
+    static WebSocketManager* instance;
+
     WebSocketManager();      // Constructor
     ~WebSocketManager();     // Destructor
 
-    void loop();             // Función pública de ejecución
+    void begin();            // New: called in Arduino setup()
+    void loop();             // Called in Arduino loop()
+
+    void webSocketEvent(WStype_t type, uint8_t* payload, size_t length);
 
 private:
-    WiFiMulti wiFiMulti;     // Declaración del objeto (sin lógica)
+    WiFiMulti WiFiMulti;
     WebSocketsClient webSocket;
 
     void hexdump(const void* mem, uint32_t len, uint8_t cols = 16);
-    void webSocketEvent(WStype_t type, uint8_t* payload, size_t length);
+
+    static void webSocketEventStatic(WStype_t type, uint8_t* payload, size_t length) {
+        if (instance) {
+            instance->webSocketEvent(type, payload, length);
+        }
+    }
 };
 
 #endif // WEBSOCKETMANAGER_H
