@@ -2,6 +2,7 @@
 const CACHE_NAME = 'spark-v2';
 const urlsToCache = [
   '/',
+  '/manifest.webmanifest',
   ...self.__WB_MANIFEST.map(entry => entry.url)
 ];
 

@@ -27,13 +27,6 @@ const PARKING_STATE = {
   }
 };
 
-// Optional: a basic home route
-app.use('/', express.static(path.join(__dirname, '..', 'client/dist')));
-
-app.get('*', (_, res) => {
-  res.sendFile(path.join(__dirname, '..', 'client/dist/index.html'));
-});
-
 function syncAllWebclients(sender) {
   [...wss.clients].filter(client => client.type === WEB_CLIENT).forEach(webClient => {
     if (webClient.readyState === WebSocket.OPEN && webClient !== sender) {
@@ -42,35 +35,35 @@ function syncAllWebclients(sender) {
   });
 }
 
+function buildArduinoStateStr() {
+  let stateStr = '';
+  for (let i = 0; i < 4; i++) {
+    stateStr += PARKING_STATE[0][i] + ' ';
+  }
+  for (let i = 0; i < 3; i++) {
+    stateStr += PARKING_STATE[1][i] + ' ';
+  }
+  stateStr += PARKING_STATE[1][3];
+  // let stateStr = '';
+  // for (let i = 0; i < 4; i++) {
+  //   stateStr += (PARKING_STATE[0][i] === 2 ? 1 : 0) + ' ';
+  // }
+  // for (let i = 0; i < 3; i++) {
+  //   stateStr += (PARKING_STATE[1][i] === 2 ? 1 : 0) + ' ';
+  // }
+  // stateStr += PARKING_STATE[1][3] === 2 ? 1 : 0;
+  return stateStr;
+}
+
 function syncAllArduinoClients() {
   // para el cliente arduino y la pagina config que simula ser arduino
+  const stateStr = buildArduinoStateStr();
   [...wss.clients].filter(client => client.type === ARDUINO_CLIENT).forEach(arduinoClient => {
     if (arduinoClient.readyState === WebSocket.OPEN) {
-      let stateStr = '';
-      for (let i = 0; i < 4; i++) {
-        stateStr += PARKING_STATE[0][i] + ' ';
-      }
-      for (let i = 0; i < 3; i++) {
-        stateStr += PARKING_STATE[1][i] + ' ';
-      }
-      stateStr += PARKING_STATE[1][3];
-      console.log('Cadena de estado enviada a arduino: ', stateStr);
       arduinoClient.send(stateStr);
+      console.log('Cadena de estado enviada a arduino: ', stateStr);
     }
   });
-  // if (arduinoClient && arduinoClient.readyState === WebSocket.OPEN) {
-  //   // TODO: which message should the server send to arduino?
-  //   let stateStr = '';
-  //   for (let i = 0; i < 4; i++) {
-  //     stateStr += (PARKING_STATE[0][i] === 2 ? 1 : 0) + ' ';
-  //   }
-  //   for (let i = 0; i < 3; i++) {
-  //     stateStr += (PARKING_STATE[1][i] === 2 ? 1 : 0) + ' ';
-  //   }
-  //   stateStr += PARKING_STATE[1][3] === 2 ? 1 : 0;
-  //   console.log('Cadena de estado enviada a arduino: ', stateStr);
-  //   arduinoClient.send(stateStr);
-  // }
 }
 
 function updateStateFromArduinoClient(stateStr) {
@@ -131,6 +124,24 @@ wss.on('connection', (wsClient, req) => {
   });
 
   wsClient.send(JSON.stringify(PARKING_STATE));
+});
+
+app.use(express.text());
+
+app.get('/reservaciones', (req, res) => {
+  res.contentType('txt');
+  res.send(buildArduinoStateStr());
+});
+
+app.post('/actualizar-estado', (req, res) => {
+  updateStateFromArduinoClient(req.body);
+  syncAllWebclients();
+  res.sendStatus(200);
+});
+
+app.use('/', express.static(path.join(__dirname, '..', 'client/dist')));
+app.get('*', (_, res) => {
+  res.sendFile(path.join(__dirname, '..', 'client/dist/index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
