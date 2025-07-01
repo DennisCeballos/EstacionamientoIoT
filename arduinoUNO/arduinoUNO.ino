@@ -9,14 +9,19 @@ const int pinesMux[3] = {33, 32, 25};
 Demultiplexor demux;
 const int pinesDemux[3] = {21, 23, 22};
 
+ShiftRegister shifReg;
+
 SensorUltrasonico ultrasonico;
 
 void setup()
 {
+  Serial.begin(115200);
   mux = Multiplexor(pinesMux, 26);
   demux = Demultiplexor(pinesDemux, 19);
 
   ultrasonico = SensorUltrasonico(19, 26);
+
+  shifReg = ShiftRegister(16, 17, 5);
 }
 
 void loop()
@@ -33,6 +38,9 @@ void loop()
     valor = ultrasonico.medirDistancia();
     Serial.print("Distancia medida: ");
     Serial.println(valor);
+
+    shifReg.escribir(i);
+    delay(2000);
   }
 }
 
@@ -47,6 +55,7 @@ bool estados[8] = {true};
 
 void setup()
 {
+Serial.begin(115200);
   entrada = EntradaManager(
       4,
       Boton(34),
