@@ -244,6 +244,17 @@ struct ShiftRegister {
         escribir(value);
     }
 
+    // Nueva función que recibe un array de bool y lo convierte a decimal
+    void actualizarEstado(bool (&estados)[8]) {
+        int val = 0;
+        for (int i = 0; i < 8; i++) {
+            if (estados[i]) {
+                val |= (1 << (7 - i));  // Asignamos el valor al bit correspondiente
+            }
+        }
+        escribir(val);  // Escribir el valor calculado en el ShiftRegister
+    }
+
     void limpiar() {
         escribir(0);
     }
