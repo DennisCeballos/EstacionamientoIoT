@@ -16,7 +16,7 @@
 WiFiMulti WiFiMulti;
 WebSocketsClient webSocket;
 
-#define USE_SERIAL Serial1
+#define USE_SERIAL Serial
 
 void hexdump(const void *mem, uint32_t len, uint8_t cols = 16) {
 	const uint8_t* src = (const uint8_t*) mem;
@@ -86,7 +86,7 @@ void setup() {
 	}
 	USE_SERIAL.println("Parece ser");
 
-	WiFiMulti.addAP("WIFI", "PASSWORD");
+	WiFiMulti.addAP("evie", "eviephone$1");
 
 	WiFi.disconnect();
 	while(WiFiMulti.run() != WL_CONNECTED) {
@@ -96,7 +96,7 @@ void setup() {
 	USE_SERIAL.println("creo");
 
 	// server address, port and URL
-	webSocket.begin("192.168.1.49", 5000, "/");
+	webSocket.begin("192.168.108.33", 3000, "/");
 	USE_SERIAL.println("empezamos");
 
 	// event handler
