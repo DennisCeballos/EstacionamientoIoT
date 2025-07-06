@@ -30,11 +30,13 @@ interface ParkingStore {
   getSpot: (id: number) => ParkingSpot | undefined;
 }
 
+const DEFAULT_WS_URL = (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host;
+
 export const useParkingStore = create<ParkingStore>((set, get) => ({
-  wsUrl: '/',
+  wsUrl: DEFAULT_WS_URL,
 
   changeWsUrl: (newWsUrl) => {
-    set({ wsUrl: newWsUrl });
+    set({ wsUrl: newWsUrl || DEFAULT_WS_URL });
   },
 
   spots: [],
@@ -57,11 +59,19 @@ export const useParkingStore = create<ParkingStore>((set, get) => ({
 
   syncSpots: (serverParkingState: ServerParkingState) => {
     const syncedParkingSpots: ParkingSpot[] = [];
-    for (let i = 0; i < 8; i++) {// 8 espacios totales
+    for (let i = 0; i < 3; i++) {// 1er piso 3 espacios
       const syncedSpot: ParkingSpot = {
         id: i + 1,
-        floor: Math.floor(i / 4) + 1,// 4 espacios por piso
-        status: serverParkingState[Math.floor(i / 4)][i % 4]
+        floor: 1,// 4 espacios por piso
+        status: serverParkingState[0][i]
+      };
+      syncedParkingSpots.push(syncedSpot);
+    }
+    for (let i = 0; i < 5; i++) {// 2do piso 5 espacios
+      const syncedSpot: ParkingSpot = {
+        id: i + 4,
+        floor: 2,
+        status: serverParkingState[1][i]
       };
       syncedParkingSpots.push(syncedSpot);
     }

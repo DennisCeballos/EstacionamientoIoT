@@ -16,14 +16,14 @@ const PARKING_STATE = {
   0: {
     0: 1,
     1: 1,
-    2: 1,
-    3: 1
+    2: 1
   },
   1: {
     0: 1,
     1: 1,
     2: 1,
-    3: 1
+    3: 1,
+    4: 1
   }
 };
 
@@ -37,13 +37,13 @@ function syncAllWebclients(sender) {
 
 function buildArduinoStateStr() {
   let stateStr = '';
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 3; i++) {
     stateStr += PARKING_STATE[0][i] + ' ';
   }
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 4; i++) {
     stateStr += PARKING_STATE[1][i] + ' ';
   }
-  stateStr += PARKING_STATE[1][3];
+  stateStr += PARKING_STATE[1][4];
   // let stateStr = '';
   // for (let i = 0; i < 4; i++) {
   //   stateStr += (PARKING_STATE[0][i] === 2 ? 1 : 0) + ' ';
@@ -76,11 +76,14 @@ function updateStateFromArduinoClient(stateStr) {
 
   // Proceed with state update
   const values = stateStr.trim().split(' ').map(Number);
-  const floor1 = values.slice(0, 4);
-  const floor2 = values.slice(4);
+  const floor1 = values.slice(0, 3);
+  const floor2 = values.slice(3);
 
-  for (let i = 0; i < 4; i++) {
+  // si esta libre en el circuito y reservado en el back, el estado no cambia en el back
+  for (let i = 0; i < 3; i++) {
     PARKING_STATE[0][i] = PARKING_STATE[0][i] === 2 && floor1[i] === 1 ? PARKING_STATE[0][i] : floor1[i];
+  }
+  for (let i = 0; i < 5; i++) {
     PARKING_STATE[1][i] = PARKING_STATE[1][i] === 2 && floor2[i] === 1 ? PARKING_STATE[1][i] : floor2[i];
   }
 

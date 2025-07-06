@@ -16,7 +16,7 @@ export const ParkingFloor = ({ floor, isDesktop }: ParkingFloorProps) => {
       <h3 className="text-lg font-semibold mb-4 text-center">
         Piso {floor}
       </h3>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         {spots.map((spot) => (
           <ParkingSpotCard
             key={spot.id}

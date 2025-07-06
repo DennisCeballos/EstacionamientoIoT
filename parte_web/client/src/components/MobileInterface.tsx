@@ -8,21 +8,21 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { useToast } from '@/hooks/use-toast';
 
 export const MobileInterface = () => {
-  const { wsUrl, getAvailableSpots, reserveSpot, syncSpots, getSpot, spots } = useParkingStore();
+  const { wsUrl, getAvailableSpots, reserveSpot, syncSpots, getSpot, getFloorSpots, spots } = useParkingStore();
   const { toast } = useToast();
   const availableSpots = getAvailableSpots();
   const socketRef = useRef<WebSocket>();
 
-  const storedReservedSpotId = Number(localStorage.getItem('reservedSpotId'));
-  console.log(storedReservedSpotId);
+  const storedReservedSpotId = localStorage.getItem('reservedSpotId') ? Number(localStorage.getItem('reservedSpotId')) : -1;
+  // console.log(storedReservedSpotId);
   const reservedSpot = getSpot(storedReservedSpotId);
-  console.log(reservedSpot);
+  // console.log(reservedSpot);
 
   const handleQuickReserve = () => {
     const spotId = reserveSpot();
     if (spotId) {
       const spot = spots.find(s => s.id === spotId);
-      socketRef.current.send(`${spot.floor - 1} ${(spot.id - 1) % 4} ${ParkingSpotStatus.RESERVED}`);
+      socketRef.current.send(`${spot.floor - 1} ${getFloorSpots(spot.floor).indexOf(spot)} ${ParkingSpotStatus.RESERVED}`);
       localStorage.setItem('reservedSpotId', spotId.toString());
       toast({
         title: "¡Espacio Reservado!",
