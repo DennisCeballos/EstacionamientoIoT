@@ -8,21 +8,56 @@ interface ParkingFloorProps {
 }
 
 export const ParkingFloor = ({ floor, isDesktop }: ParkingFloorProps) => {
-  const { getFloorSpots } = useParkingStore();
-  const spots = getFloorSpots(floor);
+  const { spots } = useParkingStore();
+
+  if (!spots || !spots.length) return <></>;
 
   return (
     <div className="bg-card rounded-lg p-4 border shadow-sm">
       <h3 className="text-lg font-semibold mb-4 text-center">
         Piso {floor}
       </h3>
-      <div className="grid grid-cols-2 gap-3">
-        {spots.map((spot) => (
-          <ParkingSpotCard
-            key={spot.id}
-            spot={spot}
-          />
-        ))}
+      <div className="grid grid-cols-3 gap-3">
+        {floor === 1 ? (
+          <>
+            <ParkingSpotCard
+             key={spots[0].id}
+             spot={spots[0]}
+            />
+            <ParkingSpotCard
+              key={spots[1].id}
+              spot={spots[1]}
+            />
+            <ParkingSpotCard
+              key={spots[2].id}
+              spot={spots[2]}
+            />
+          </>
+        ) : (
+          <>
+            <ParkingSpotCard
+             key={spots[3].id}
+             spot={spots[3]}
+            />
+            <ParkingSpotCard
+              key={spots[4].id}
+              spot={spots[4]}
+            />
+            <ParkingSpotCard
+              key={spots[5].id}
+              spot={spots[5]}
+            />
+            <ParkingSpotCard
+              key={spots[6].id}
+              spot={spots[6]}
+            />
+            <ParkingSpotCard
+              key={spots[7].id}
+              spot={spots[7]}
+            />
+          </>
+        )
+        }
       </div>
     </div>
   );

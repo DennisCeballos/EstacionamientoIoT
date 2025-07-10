@@ -30,8 +30,10 @@ interface ParkingStore {
   getSpot: (id: number) => ParkingSpot | undefined;
 }
 
+const DEFAULT_WS_URL = (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host;
+
 export const useParkingStore = create<ParkingStore>((set, get) => ({
-  wsUrl: '/',
+  wsUrl: DEFAULT_WS_URL,
 
   changeWsUrl: (newWsUrl) => {
     set({ wsUrl: newWsUrl });

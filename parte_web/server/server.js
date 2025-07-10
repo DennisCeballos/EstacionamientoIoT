@@ -6,7 +6,9 @@ const WebSocket = require('ws');
 // Basic Express app (for Glitch to expose a web server)
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+const wss = new WebSocket.Server({
+  server
+});
 
 const ARDUINO_CLIENT = 'arduino';
 const WEB_CLIENT = 'web';
@@ -91,6 +93,12 @@ function updateStateFromArduinoClient(stateStr) {
 
 function updateStateFromWebClient(stateStr) {
   const [floor, spot, status] = stateStr.split(' ').map(val => Number(val));
+  console.log(stateStr);
+
+  // if (!PARKING_STATE[floor]) {
+  //   PARKING_STATE[floor] = {}; // Crear el objeto si no existe
+  // }
+
   PARKING_STATE[floor][spot] = status;
   console.log('Estado actualizado desde web: ', stateStr);
   console.log(PARKING_STATE);

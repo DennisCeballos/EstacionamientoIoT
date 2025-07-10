@@ -19,7 +19,7 @@
 
   <script>
     const log = document.getElementById('log');
-    const socket = new WebSocket('https://intriguing-broad-baseball.glitch.me');
+    const socket = new WebSocket('ws://localhost:3000', 'web');
 
     function escribirLog(texto) {
       const p = document.createElement('p');
